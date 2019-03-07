@@ -1,6 +1,10 @@
 import os, cv2, datetime
 from . import credentials
 
+"""
+Module containing all variables of the program
+"""
+
 # Directories
 DATA_DIR = os.path.join(os.getcwd(), 'data')
 TEMPLATES_DIR = os.path.join(DATA_DIR, 'templates')
@@ -45,8 +49,8 @@ SCORE_THRESHOLD = 5
 HASHTAG_SCORE_THRESHOLD = 100
 TIME_THRESHOLD = datetime.timedelta(7)
 TIME_BATCH_SIZE = 86400  # 1 day
-REDDIT_CREDENTIALS = credentials.REDDIT_CREDENTIALS
-INSTAGRAM_CREDENTIALS = credentials.INSTAGRAM_CREDENTIALS
+REDDIT_CREDENTIALS = credentials.REDDIT_CREDENTIALS  # Sorry but I won't give it to you   :)
+INSTAGRAM_CREDENTIALS = credentials.INSTAGRAM_CREDENTIALS  # Same thing as the line above :)
 
 # Analysis
 MAX_LEVEL = 8

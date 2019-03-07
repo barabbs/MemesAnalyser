@@ -4,6 +4,13 @@ import os, cv2, math
 
 
 def matchTemplate_decorator(n):
+    """
+    Decorates the comparison method for the usage in Template class
+
+    :param n: Number of the comparison method to return
+    :type n: int
+    :return:
+    """
     if var.MATCH_TEMPLATE_METHODS[n][1] == 0:
         def func_wrapper(img, templ, scale):
             result = cv2.minMaxLoc(cv2.matchTemplate(img, templ, var.MATCH_TEMPLATE_METHODS[n][0]))
@@ -16,7 +23,15 @@ def matchTemplate_decorator(n):
 
 
 class Template(object):
+    """
+    Class representing a meme template
+    """
     def __init__(self, *args):
+        """
+        Initialises a new template object with the arguments gotten from database
+
+        :param args: list of arguments of the template
+        """
         self.ID = args[0]
         self.level_correction = args[2]
         self.template = None
@@ -24,7 +39,12 @@ class Template(object):
         self.matchers = [matchTemplate_decorator(i) for i in range(var.METHODS_NUMBER)]
         self._load_frames()
 
-    def _load_frames(self):  # TODO: A bit of spaghetti code...
+    def _load_frames(self):
+        """
+        Loads the template image, converts it to HSV values and resizes it to differend levels and different scales for each level
+
+        :return:
+        """
         self.template = cv2.imread(os.path.join(var.TEMPLATES_DIR, f"{self.ID}{var.IMG_EXT}"))
         self.template = cv2.cvtColor(self.template, cv2.COLOR_BGR2HSV)
 
@@ -50,12 +70,38 @@ class Template(object):
                     self.resized[level][scale] = self.resized[level][scale][corner[1]:corner[1] + max_shape[1], corner[0]:corner[0] + max_shape[0]]
 
     def primary_search(self, meme):
+        """
+        Primary research for the meme, with the first comparison method
+        Returns a list with match value for that function, the position and the scale of the maximum match
+
+        :param meme: The meme to analyse
+        :return:
+        """
         return self.search(meme, 0)
 
     def secondary_search(self, meme):
+        """
+        Secondary research for the meme, with all 3 comparison method
+        Returns a list of lists with match value for that function, position and scale of the maximum match for all 3 methods of comparison
+
+        :param meme: The meme to analyse
+        :return:
+        """
         return [self.search(meme, 1, i) for i in range(var.METHODS_NUMBER)]
 
     def search(self, meme, ind, method_n=0):
+        """
+        Searches the template inside the given meme with the provided function
+        Returns a list of lists with match value for that function, position and scale of the maximum match for all 3 methods of comparison
+
+        :param meme: The meme to analyse
+        :param ind: A number representing primary or secondary search
+        :type ind: int
+        :param method_n: Number of the function to use
+        :type method_n: int
+        :return:
+        """
+
         maximum = [0, (0, 0), 0]
         level = meme.resized[ind][1]
         for i in range(var.MIN_SCALE, var.MAX_SCALE + 1):

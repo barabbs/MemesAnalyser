@@ -1,8 +1,8 @@
-from modules.memeanalyser import MemeAnalyser
+from modules.memesanalyser import MemesAnalyser
 
 
 def main():
-    a = MemeAnalyser()
+    a = MemesAnalyser()
     a.run()
 
 

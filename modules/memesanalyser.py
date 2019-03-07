@@ -12,12 +12,21 @@ import sosso_terminal.terminal as stt
 import queue, time
 
 
-class MemeAnalyser(object):
+class MemesAnalyser(object):
+    """
+    Main class of the program
+    """
+
     def __init__(self):
+        """
+        Initialises a new instance of MemesAnalyser
+        """
+
+        # Creates a new terminal handling the output
         self.terminal = stt.ASyncTerminal(["shutdown", "update"])
         self.terminal.start()
 
-        self.pipes = {i: mprc.Queue(var.PIPES[i]) for i in var.PIPES}
+        # Gets sources and templates
         self.sources = db.read_database_lines("sources")
         self.templates = list()
         templ_list = db.read_database_lines('templates')
@@ -28,22 +37,48 @@ class MemeAnalyser(object):
                 self.terminal.error(e)
         self.terminal.ok("Sources and Templates loaded")
 
+        # Initialises pipes and subprocesses
+        self.pipes = {i: mprc.Queue(var.PIPES[i]) for i in var.PIPES}
         self.subprocesses = dict()
         self.init_subprocesses()
         self.terminal.ok("Subprocesses started")
 
     def init_subprocesses(self):
+        """
+        Initialises subprocesses at the beginning of the program
+
+        :return:
+        """
         self._new_subprocess(DownloadHandler, "DownloadHandler", {'sources': self.sources})
         for i in range(var.ANALYSERS_NUMBER):
             self._new_subprocess(Analyser, f"Analyser_{i}", {'templates': self.templates})
         self._new_subprocess(Databaser, "Databaser", {'sources': self.sources})
 
     def _new_subprocess(self, sub_class, name, kwargs=None):
+        """
+        Starts a new child process and add it to the subprocesses dict
+
+        :param sub_class: The class of the subprocess
+        :param name: The name of the process
+        :type name: str
+        :param kwargs: The kwargs to be pass to the new process
+        :type kwargs: dict
+        :return:
+        """
         sub = sub_class(name, self.pipes, self.terminal, **kwargs)
         self.subprocesses[sub.name] = sub
         self.subprocesses[sub.name].start()
 
     def _close_subprocess(self, keys, pipe=None):
+        """
+        Closes child processes after waiting for the relative pipe to empty
+
+        :param keys: The names of the subprocesses to close
+        :type keys: list
+        :param pipe: The pipe name to wait for
+        :type pipe: str
+        :return:
+        """
         for k in keys:
             self.subprocesses[k].exit_event.set()
         if pipe:
@@ -74,6 +109,13 @@ class MemeAnalyser(object):
             self.terminal.warning(f"{k} forced exit")
 
     def wait_for_pipe(self, key):
+        """
+        Waits for the pipe to empty
+
+        :param key: The name of the pipe to wait for
+        :type key: str
+        :return:
+        """
         start = time.time()
         self.terminal.info(f"Waiting for pipe {key} to empty...")
         try:
@@ -90,6 +132,11 @@ class MemeAnalyser(object):
             self.terminal.info(f"Pipe {key} is empty")
 
     def run(self):
+        """
+        Main method of the class. Gets commands from the terminal input and the child processes. Updates the state of the program
+
+        :return:
+        """
         self.terminal.info("STARTING")
         try:
             while True:
@@ -109,6 +156,11 @@ class MemeAnalyser(object):
         self.exit()
 
     def _check_commands(self):
+        """
+        Checks the command passed by the terminal input
+
+        :return:
+        """
         command = self.terminal.update()
         if command == 'update':
             pipes_statuses = list()
@@ -125,6 +177,11 @@ class MemeAnalyser(object):
             raise StopIteration
 
     def exit(self):
+        """
+        Exits the program, waiting for and closing the child processes
+
+        :return:
+        """
         for i in [(["DownloadHandler", ],), ([f"Downloader_{i}" for i in range(var.DOWNLOADERS_NUMBER)], 'download'), ([f"Analyser_{i}" for i in range(var.ANALYSERS_NUMBER)], 'memes'),
                   (["Databaser", ], "database")]:
             self._close_subprocess(*i)
