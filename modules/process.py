@@ -152,22 +152,22 @@ class Process(mprc.Process):
         :return:
         """
         if error:
-            self.terminal.error(f"{self.name}: {error}")
+            self.terminal.error("{}: {}".format(self.name, error))
         if to_file:
             try:
-                file = os.path.join(var.ERROR_DIR, self.name.split("_")[0], f"{self.name}_{utl.get_time()}.txt")
+                file = os.path.join(var.ERROR_DIR, self.name.split("_")[0], "{}_{}.txt".format(self.name,utl.get_time()))
                 with open(file, 'w') as f:
                     traceback.print_exc(file=f)
                     if additional:
                         f.write("\n\n\n")
                         for i in additional:
-                            f.write(f"{i}: {additional[i]}\n")
+                            f.write("{}: {}\n".format(i, additional[i]))
             except FileNotFoundError:
                 os.mkdir(os.path.join(var.ERROR_DIR, self.name.split("_")[0]))
-                file = os.path.join(var.ERROR_DIR, self.name.split("_")[0], f"{self.name}_{utl.get_time()}.txt")
+                file = os.path.join(var.ERROR_DIR, self.name.split("_")[0], "{}_{}.txt".format(self.name,utl.get_time()))
                 with open(file, 'w') as f:
                     traceback.print_exc(file=f)
                     if additional:
                         f.write("\n\n\n")
                         for i in additional:
-                            f.write(f"{i}: {additional[i]}\n")
+                            f.write("{}: {}\n".format(i, additional[i]))

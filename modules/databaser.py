@@ -15,7 +15,7 @@ def read_database_lines(table):
     """
     connection = sql.connect(var.DATABASE_PATH)
     cursor = connection.cursor()
-    cursor.execute(f"SELECT * FROM {table}")
+    cursor.execute("SELECT * FROM "+table)
     data = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -57,7 +57,7 @@ class Databaser(prc.Process):
             columns = ""
             for i in var.DATABASE_TABLES[table]:
                 columns += "" + i + " " + var.DATABASE_TABLES[table][i] + ","
-            self.cursor.execute(f"CREATE TABLE IF NOT EXISTS '{table}' ({columns[:-1]})")
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS " + table + " (" + str(columns[:-1]) + ")")
 
     def _run(self):
         """
@@ -91,13 +91,13 @@ class Databaser(prc.Process):
         :param meme:
         :return:
         """
-        self.cursor.execute(f"INSERT INTO matches VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (
+        self.cursor.execute("INSERT INTO matches VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (
             meme.source_ID, meme.ID, meme.template_ID, utl.get_int(meme.part_match[0][0]), meme.part_match[0][2], meme.part_match[0][1][0], meme.part_match[0][1][1],
             utl.get_int(meme.part_match[1][0]),
             meme.part_match[1][2], meme.part_match[1][1][0], meme.part_match[1][1][1], utl.get_int(meme.part_match[2][0]), meme.part_match[2][2], meme.part_match[2][1][0], meme.part_match[2][1][1],
             utl.get_int(meme.match), meme.score, meme.time))
-        self.cursor.execute(f"UPDATE templates SET counts = counts + 1 WHERE ID = ?", (meme.template_ID,))
-        self.cursor.execute(f"UPDATE sources SET counts = counts + 1 , last_time = MAX(last_time, ?) WHERE ID = ?", (meme.time, meme.source_ID))
+        self.cursor.execute("UPDATE templates SET counts = counts + 1 WHERE ID = ?", (meme.template_ID,))
+        self.cursor.execute("UPDATE sources SET counts = counts + 1 , last_time = MAX(last_time, ?) WHERE ID = ?", (meme.time, meme.source_ID))
         self.last_time = meme.time
         self.count += 1
 
@@ -111,7 +111,8 @@ class Databaser(prc.Process):
         utl.copy_file(var.TMP_DATABASE_PATH, var.DATABASE_PATH)
         self.last_backup = time.time()
         self.terminal.ok(
-            f"{utl.get_time()}: Backup completed - {self.count} entries written, {self.count / var.TIME_BETWEEN_BACKUPS} per second. We are around {datetime.datetime.fromtimestamp(self.last_time).strftime(var.TIME_STAMP)}")
+            utl.get_time() + ": Backup completed - " + str(self.count) + " entries written, " + str(
+                self.count / var.TIME_BETWEEN_BACKUPS) + " per second. We are around " + datetime.datetime.fromtimestamp(self.last_time).strftime(var.TIME_STAMP))
         self.count = 0
 
     def exit(self):

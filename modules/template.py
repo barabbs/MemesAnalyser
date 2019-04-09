@@ -26,6 +26,7 @@ class Template(object):
     """
     Class representing a meme template
     """
+
     def __init__(self, *args):
         """
         Initialises a new template object with the arguments gotten from database
@@ -33,7 +34,9 @@ class Template(object):
         :param args: list of arguments of the template
         """
         self.ID = args[0]
+        self.name = args[1]
         self.level_correction = args[2]
+        self.threshold = args[6]
         self.template = None
         self.resized = dict()
         self.matchers = [matchTemplate_decorator(i) for i in range(var.METHODS_NUMBER)]
@@ -45,7 +48,7 @@ class Template(object):
 
         :return:
         """
-        self.template = cv2.imread(os.path.join(var.TEMPLATES_DIR, f"{self.ID}{var.IMG_EXT}"))
+        self.template = cv2.imread(os.path.join(var.TEMPLATES_DIR, str(self.ID) + var.IMG_EXT))
         self.template = cv2.cvtColor(self.template, cv2.COLOR_BGR2HSV)
 
         height, width = self.template.shape[0:2]
