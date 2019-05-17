@@ -138,6 +138,7 @@ class Process(mprc.Process):
         :return:
         """
         self.exit_event.clear()
+        exit()
 
     def track_error(self, to_file=True, error=None, additional=None):
         """
